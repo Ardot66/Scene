@@ -27,7 +27,7 @@ Libs:
 	$(foreach MAKEFILE, $(wildcard $(LIB)/*), "$(MAKE)" --no-print-directory -C $(MAKEFILE) &) echo Compiled sub-makefiles
 
 $(DLL): $(HEADERS) $(SOURCE)/$(NAME).c
-	gcc -fPIC -c $(SOURCE)/$(NAME).c -o $(TEMP)/$(NAME).o
+	gcc -fPIC -c $(INCLUDE) $(SOURCE)/$(NAME).c -o $(TEMP)/$(NAME).o
 	gcc -s -shared $(TEMP)/$(NAME).o -o $(DLL)
 
 $(TESTS_EXE): $(HEADERS) $(DLL) $(TESTS)/$(TESTS_NAME).c
