@@ -1,0 +1,4 @@
+[submodule "Libraries/TestingUtilities"]
+	path = Libraries/TestingUtilities
+	url = https://github.com/Ardot66/TestingUtilities.git
+	branch = export
