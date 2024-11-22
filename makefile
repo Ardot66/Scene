@@ -1,9 +1,10 @@
 SHELL = cmd
 
-TEMP = Temp
-BIN = Bin
+TEMP = $(CURDIR)/Temp
+BIN = $(CURDIR)/Bin
 SOURCE = Source
 TESTS = Tests
+LIB = Libraries
 
 NAME = Scene
 TESTS_NAME = Tests
@@ -11,18 +12,26 @@ TESTS_NAME = Tests
 DLL := $(BIN)/lib$(NAME).dll
 TESTS_EXE := $(BIN)/$(TESTS_NAME).exe
 
-LOCAL_HEADERS := $(abspath $(wildcard */*.h Libraries/*/*/*.h))
-LOCAL_INCLUDE := $(dir $(addprefix -I,$(LOCAL_HEADERS)))
+HEADERS := $(abspath $(wildcard */*.h Libraries/*/*/*.h))
+INCLUDE := $(dir $(addprefix -I,$(HEADERS)))
 
-All: $(DLL) $(TESTS_EXE)
+export BIN
+export TEMP
+export HEADERS
+export INCLUDE
+
+All: Libs $(DLL) $(TESTS_EXE)
 	$(TESTS_EXE)
 
-$(DLL): $(LOCAL_HEADERS) $(SOURCE)/$(NAME).c
+Libs:
+	$(foreach MAKEFILE, $(wildcard $(LIB)/*), "$(MAKE)" --no-print-directory -C $(MAKEFILE) &) echo Compiled sub-makefiles
+
+$(DLL): $(HEADERS) $(SOURCE)/$(NAME).c
 	gcc -fPIC -c $(SOURCE)/$(NAME).c -o $(TEMP)/$(NAME).o
 	gcc -s -shared $(TEMP)/$(NAME).o -o $(DLL)
 
-$(TESTS_EXE): $(LOCAL_HEADERS) $(DLL) $(TESTS)/$(TESTS_NAME).c
-	gcc -c $(LOCAL_INCLUDE) $(TESTS)/$(TESTS_NAME).c -o $(TEMP)/$(TESTS_NAME).o
+$(TESTS_EXE): $(HEADERS) $(DLL) $(TESTS)/$(TESTS_NAME).c
+	gcc -c $(INCLUDE) $(TESTS)/$(TESTS_NAME).c -o $(TEMP)/$(TESTS_NAME).o
 	gcc -s -L$(BIN) -l$(NAME) $(TEMP)/$(TESTS_NAME).o -o $(TESTS_EXE)
 
 Clean:
