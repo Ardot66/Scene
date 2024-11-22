@@ -6,3 +6,7 @@
 	path = Libraries/Collections
 	url = https://github.com/Ardot66/Collections.git
 	branch = export
+[submodule "Libraries/ComponentObjects"]
+	path = Libraries/ComponentObjects
+	url = https://github.com/Ardot66/ComponentObjects.git
+	branch = export
