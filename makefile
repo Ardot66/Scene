@@ -35,5 +35,5 @@ $(TESTS_EXE): $(HEADERS) $(DLL) $(TESTS)/$(TESTS_NAME).c
 	gcc -s -L$(BIN) -l$(NAME) $(TEMP)/$(TESTS_NAME).o -o $(TESTS_EXE)
 
 Clean:
-	DEL /Q $(BIN)\*.dll $(BIN)\*.exe
-	DEL /Q $(TEMP)\*.o
+	DEL /Q "$(BIN)\*.dll" "$(BIN)\*.exe"
+	DEL /Q "$(TEMP)\*.o"
