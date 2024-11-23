@@ -1,0 +1,55 @@
+Goal: Seperate rendering, saving, and processing threads. Potentially even seperate physics threads.
+
+Notes:
+- Theoretically, the processing thread should be the only thread writing to the tree.
+
+Ideas:
+1. Queue-free system that queues objects to be freed at the end of a frame, rather than immediately. At the end of a processing frame, get all threads to pause, then free queued objects. Without this, an object might be freed while being rendered or saved, resulting in wackyness.
+
+2. Perhaps some kind of 'server' system can be used, where the processing thread pushes and pulls primatives from a server that is handled seperately from the main tree.
+ Cons:
+ - Extra memory needed to handle servers, less cache optmisation.
+ - More complexity in registering objects to be rendered and handled in physics calculations.
+ - Doesn't solve the saving problem without copying literally the entire tree, which is basically the same as saving anyway.
+ Pros:
+ - Would probably work for rendering and physics, and would definitely be faster than using a single thread at least.
+
+3. Magical 'flagging' system that allows other threads to know when an object is invalidated. This could involve bitflags, or maybe even mutexes if we want to go that far.
+ Cons:
+ - 'magical', so I have no idea how an implementation would work.
+ Pros:
+ - If an implementation did exist, it would be blazingly fast an memory efficient, allowing all threads to work on the same objects with little extra hassle.
+
+4. Chunking system that assigns mutexes to certain areas of the game tree. Reading threads, such as saving and rendering, could access a chunk, or a writing thread could access a chunk, but never both at once. This could be very efficient, as long as chunks are queued and handled in a logical manner.
+ Cons:
+ - Could lead to bottlenecks where chunks take a long time to process, render, and physics process, so the entire system is limited to the speed of processing this chunk effectively single-threadedly.
+ - Might still lead to saving and rendering weirdness where chunks don't align quite the same after everything is said and done.
+ - Might waste time on objects that CAN be multithreaded, if it is not informed that an object can be multithreaded.
+ Pros:
+ - Would be blazingly fast in contexts where responsibilities are well divided.
+ - Would require VERY little implementation from the user, making it extremely easy to use.
+
+5. Leave it up to the implementer. They could simply design objects that segment data effectively, and use mutexes where required. Ideally, this would allow all threads to work on a single object simultaneously, maybe excluding saving as that overlaps too much with processing. In a way, this is just a more local method of implementing servers.
+ Cons:
+ - May lead to the creation of a lot of mutexes, especially for objects that work with lists that need to be written to by the processing thread, but read by the rendering thread.
+ - Would involve the user having to create and use their own mutexes everywhere, which would be a boilerplate pain in the ass.
+ Pros:
+ - Would be very fast for objects that do not have dynamic memory shared between threads.
+ - Mutexes used for this purpose could simply be shared between many objects, which would be slightly more compute inefficient, but would save having to assign absurd numbers of mutexes, especially if the dynamic memory is not written to regularly.
+ - Would synergize with the queue-free system (it's probably necessary for this implementation), especially when mutexes need to be freed.
+
+Conclusion:
+Thinking about it, the main operations that would not work in a multi-threaded environment all have to do with TreeObject management. Adding, inserting, and removing from TreeObject child lists would be dangerous, and freeing TreeObjects would also be risky. For this reason, a system like (5) would require mutexes on basically every object, and user code would be littered with locks and unlocks, as well as queue-frees. However, while (4) shows a lot of promise, it would be difficult to handle TreeObjects that ARE multithreading safe.
+
+Perhaps the best solution would then be a combination of the two.
+6. A chunking system similar to (4) and (5) is used, but it has two modes: Group and Individual. In both modes a mutex is created for a chunk, but the use case differs. In group mode, the mutex locks the entire chunk, and thread groups must wait for a read or write operation to finish on the entire chunk. In Individual mode, the mutex is instead used by each node individually to handle anything to do with dynamic memory, or anything else that could cause a race condition, segfault, or other issue.
+ Cons:
+ - A Queue-free system like (1) will still be required to handle object deletion, as otherwise any operation on a chunk object would require locking the entire chunk, for fear of memory invalidation.
+ - Both modes might still lead to rendering and saving weirdness, and especially for complicated systems the save functionality might just have to take place in the processing thread.
+ - Individual mode would take away the ability to process and render chunks in an arbitrary order to save time, which may or may not be an issue, although deterministic applications may need to disable this feature anyways.
+ - Components will have to be designed for individual, group mode, or both, which could lead to added complexity.
+ Pros:
+ - In most cases, mutex creation and deletion will be handled by the engine, which is far easier for the programmer.
+ - Functionality should cater well to most types of objects, especially given that objects in individual mode will be able to create their own mutexes for improved performance.
+ - In many cases, even for systems like UI, individual mode should allow for processing and rendering to take place at the same time, at the cost of some programmer pain.
+ - Group mode should be efficient enough for many smaller-scale projects, and thus the complexity of individual mode can be ignored.
