@@ -31,3 +31,27 @@ void FreeQueueFlush()
     }
     pthread_mutex_unlock(&FreeQueueMutex);
 }
+
+INTERFACE_DEFINE(Saveable)
+INTERFACE_DEFINE(Readyable)
+
+COMPONENT_DEFINE(Node,
+    ,
+    COMPONENT_USES_DEFINE(Readyable)
+    COMPONENT_USES_DEFINE(Saveable)
+)
+
+int ThreadGroupReady(void *object, const ComponentData *component)
+{
+
+}
+
+int ThreadGroupExit(void *object, const ComponentData *component)
+{
+    
+}
+
+COMPONENT_DEFINE(ThreadGroup,
+    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = ThreadGroupReady, .Exit = ThreadGroupExit),
+
+)
