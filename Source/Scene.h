@@ -32,4 +32,8 @@ COMPONENT_DECLARE(TreeObject,
 
 )
 
+int FreeQueueInit();
+int FreeQueuePush(void *ptr);
+void FreeQueueFlush();
+
 #endif
