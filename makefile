@@ -31,7 +31,7 @@ Libs:
 
 $(DLL): $(HEADERS) $(SOURCE)/$(NAME).c
 	gcc -fPIC -c $(INCLUDE) $(SOURCE)/$(NAME).c -o $(TEMP)/$(NAME).o
-	gcc -s -shared $(TEMP)/$(NAME).o -L$(BIN) -l$(COLLECTIONS) -l$(COMPONENT_OBJECTS) -o $(DLL)
+	gcc -s -shared $(TEMP)/$(NAME).o -L$(BIN) -l$(COLLECTIONS) -l$(COMPONENT_OBJECTS) -lpthread -o $(DLL)
 
 $(TESTS_EXE): $(HEADERS) $(DLL) $(TESTS)/$(TESTS_NAME).c
 	gcc -c $(INCLUDE) $(TESTS)/$(TESTS_NAME).c -o $(TEMP)/$(TESTS_NAME).o
