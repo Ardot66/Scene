@@ -41,12 +41,12 @@ COMPONENT_DEFINE(Node,
     COMPONENT_USES_DEFINE(Saveable)
 )
 
-int MutexGroupReady(void *object, const ComponentData *component)
+int MutexGroupReady(ComponentReference self)
 {
 
 }
 
-int MutexGroupExit(void *object, const ComponentData *component)
+int MutexGroupExit(ComponentReference self)
 {
     
 }

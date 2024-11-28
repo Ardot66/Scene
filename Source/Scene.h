@@ -5,39 +5,39 @@
 #include "ComponentObjects.h"
 
 typedef struct SaveData SaveData;
-typedef struct ObjectRef ObjectRef;
+typedef struct ComponentReference ComponentReference;
 
 struct SaveData
 {
 
 };
 
-struct ObjectRef
+struct ComponentReference
 {
     void *Object;
     ComponentData *ComponentData;
 };
 
 INTERFACE_DECLARE(Saveable, 
-    int (*Save)(void *object, const ComponentData *component, SaveData *saveStack);
-    int (*Load)(void *object, const ComponentData *component, SaveData *saveStack);
+    int (*Save)(ComponentReference self, SaveData *saveStack);
+    int (*Load)(ComponentReference self, SaveData *saveStack);
 )
 
 INTERFACE_DECLARE(Readyable,
-    int (*Ready)(void *object, const ComponentData *component);
-    int (*Exit)(void *object, const ComponentData *component);
+    int (*Ready)(ComponentReference self);
+    int (*Exit)(ComponentReference self);
 )
 
 COMPONENT_DECLARE(Node, 
     ,
     COMPONENT_USES_DECLARE(Node, Readyable)
     COMPONENT_USES_DECLARE(Node, Saveable),
-    ObjectRef Parent;
-    ObjectRef MutexGroup;
+    ComponentReference Parent;
+    ComponentReference MutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;
-    ObjectRef *Children;
+    ComponentReference *Children;
 )
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
