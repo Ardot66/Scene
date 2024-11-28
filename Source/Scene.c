@@ -41,6 +41,8 @@ COMPONENT_DEFINE(Node,
     COMPONENT_USES_DEFINE(Saveable)
 )
 
+INTERFACE_DEFINE(MutexGroup)
+
 int MutexGroupReady(ComponentReference self)
 {
 
@@ -51,7 +53,8 @@ int MutexGroupExit(ComponentReference self)
     
 }
 
-COMPONENT_DEFINE(MutexGroup,
-    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = MutexGroupReady, .Exit = MutexGroupExit),
+COMPONENT_DEFINE(NodeMutexGroup,
+    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = MutexGroupReady, .Exit = MutexGroupExit)
+    COMPONENT_IMPLEMENTS_DEFINE(MutexGroup),
 
 )

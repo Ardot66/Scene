@@ -33,7 +33,7 @@ COMPONENT_DECLARE(Node,
     COMPONENT_USES_DECLARE(Node, Readyable)
     COMPONENT_USES_DECLARE(Node, Saveable),
     ComponentReference Parent;
-    ComponentReference MutexGroup;
+    ComponentReference NodeMutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;
@@ -42,8 +42,14 @@ COMPONENT_DECLARE(Node,
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
-COMPONENT_DECLARE(MutexGroup,
-    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, Readyable),
+INTERFACE_DECLARE(MutexGroup,
+    void (*Lock)(ComponentReference *self, enum MutexGroupMode mode);
+    void (*Unlock)(ComponentReference *self);
+)
+
+COMPONENT_DECLARE(NodeMutexGroup,
+    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, Readyable)
+    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, MutexGroup),
     ,
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;
