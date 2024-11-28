@@ -15,7 +15,7 @@ struct SaveData
 struct ComponentReference
 {
     void *Object;
-    ComponentData *ComponentData;
+    ObjectComponentData *ComponentData;
 };
 
 INTERFACE_DECLARE(Saveable, 
