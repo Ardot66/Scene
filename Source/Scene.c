@@ -24,7 +24,7 @@ void FreeQueueFlush()
     pthread_mutex_lock(&FreeQueueMutex);
     for(size_t x = 0; x < FreeQueue.Count; x++)
     {
-        void *ptr = CArrayGet(&FreeQueue, sizeof(ptr), 0);
+        void *ptr = *(void **)CArrayGet(&FreeQueue, sizeof(ptr), 0);
         CArrayRemove(&FreeQueue, sizeof(ptr), 0);
 
         free(ptr);
