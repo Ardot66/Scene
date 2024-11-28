@@ -33,21 +33,21 @@ COMPONENT_DECLARE(Node,
     COMPONENT_USES_DECLARE(Node, Readyable)
     COMPONENT_USES_DECLARE(Node, Saveable),
     ObjectRef Parent;
-    ObjectRef ThreadGroup;
+    ObjectRef MutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;
     ObjectRef *Children;
 )
 
-enum ThreadGroupMode {THREAD_GROUP_MODE_NONE, THREAD_GROUP_MODE_READ, THREAD_GROUP_MODE_WRITE};
+enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
-COMPONENT_DECLARE(ThreadGroup,
-    COMPONENT_IMPLEMENTS_DECLARE(ThreadGroup, Readyable),
+COMPONENT_DECLARE(MutexGroup,
+    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, Readyable),
     ,
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;
-    enum ThreadGroupMode Mode;
+    enum MutexGroupMode Mode;
     size_t ActiveThreadCount;
 )
 

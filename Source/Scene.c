@@ -41,17 +41,17 @@ COMPONENT_DEFINE(Node,
     COMPONENT_USES_DEFINE(Saveable)
 )
 
-int ThreadGroupReady(void *object, const ComponentData *component)
+int MutexGroupReady(void *object, const ComponentData *component)
 {
 
 }
 
-int ThreadGroupExit(void *object, const ComponentData *component)
+int MutexGroupExit(void *object, const ComponentData *component)
 {
     
 }
 
-COMPONENT_DEFINE(ThreadGroup,
-    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = ThreadGroupReady, .Exit = ThreadGroupExit),
+COMPONENT_DEFINE(MutexGroup,
+    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = MutexGroupReady, .Exit = MutexGroupExit),
 
 )
