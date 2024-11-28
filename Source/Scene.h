@@ -43,7 +43,7 @@ COMPONENT_DECLARE(Node,
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
 INTERFACE_DECLARE(MutexGroup,
-    void (*Lock)(ComponentReference self, enum MutexGroupMode mode);
+    void (*Lock)(ComponentReference self, const enum MutexGroupMode mode);
     void (*Unlock)(ComponentReference self);
 )
 
