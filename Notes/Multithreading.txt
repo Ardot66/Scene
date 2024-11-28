@@ -48,6 +48,7 @@ Perhaps the best solution would then be a combination of the two.
  - Both modes might still lead to rendering and saving weirdness, and especially for complicated systems the save functionality might just have to take place in the processing thread.
  - Individual mode would take away the ability to process and render chunks in an arbitrary order to save time, which may or may not be an issue, although deterministic applications may need to disable this feature anyways.
  - Components will have to be designed for individual, group mode, or both, which could lead to added complexity.
+ - In chunk mode, signals to objects in different chunks will require the temporary aquisition of those chunks, which could slow down execution significantly.
  Pros:
  - In most cases, mutex creation and deletion will be handled by the engine, which is far easier for the programmer.
  - Functionality should cater well to most types of objects, especially given that objects in individual mode will be able to create their own mutexes for improved performance.
