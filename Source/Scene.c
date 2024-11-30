@@ -36,11 +36,19 @@ INTERFACE_DEFINE(Saveable)
 INTERFACE_DEFINE(Readyable)
 INTERFACE_DEFINE(INode)
 
+int Node_Ready(ComponentReference self)
+{
+    
+}
+
 COMPONENT_DEFINE(Node,
     COMPONENT_IMPLEMENTS_DEFINE(INode, 
         .Parent = (void *)offsetof(Node, Parent), 
         .MutexGroup = (void *)offsetof(Node, MutexGroup), 
-        .ChildCount = (void *)offsetof(Node, ChildCount)
+        .ChildCount = (void *)offsetof(Node, ChildCount),
+    )
+    COMPONENT_IMPLEMENTS_DEFINE(Readyable,
+        .Ready = Node_Ready
     ),
     COMPONENT_USES_DEFINE(Readyable)
     COMPONENT_USES_DEFINE(Saveable)
