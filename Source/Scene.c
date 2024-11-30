@@ -38,7 +38,22 @@ INTERFACE_DEFINE(INode)
 
 int Node_Ready(ComponentReference self)
 {
-    
+    Node *node = POINTER_OFFSET(self.Object, self.ComponentData->Offset);
+
+    node->ChildCount = 0;
+    node->ChildListLength = 0;
+    node->Children = NULL;
+
+    return 0;
+}
+
+int Node_Exit(ComponentReference self)
+{
+    Node *node = POINTER_OFFSET(self.Object, self.ComponentData->Offset);
+
+    free(node->Children);
+
+    return 0;
 }
 
 COMPONENT_DEFINE(Node,
@@ -48,7 +63,8 @@ COMPONENT_DEFINE(Node,
         .ChildCount = (void *)offsetof(Node, ChildCount),
     )
     COMPONENT_IMPLEMENTS_DEFINE(Readyable,
-        .Ready = Node_Ready
+        .Ready = Node_Ready,
+        .Exit = Node_Exit
     ),
     COMPONENT_USES_DEFINE(Readyable)
     COMPONENT_USES_DEFINE(Saveable)
