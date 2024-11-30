@@ -6,6 +6,7 @@
 
 typedef struct SaveData SaveData;
 typedef struct ComponentReference ComponentReference;
+typedef struct InterfaceReference InterfaceReference;
 
 struct SaveData
 {
@@ -16,6 +17,12 @@ struct ComponentReference
 {
     void *Object;
     ObjectComponentData *ComponentData;
+};
+
+struct InterfaceReference
+{
+    void *Object;
+    ObjectInterfaceInstanceData *Interface;
 };
 
 INTERFACE_DECLARE(Saveable, 
