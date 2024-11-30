@@ -28,8 +28,7 @@ int TestObjectReady(ObjectData *objectData, void *object)
         ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
         Readyable *readyable = readyableInstance->VTable;
 
-        ComponentReference reference = {.Object = object, .ComponentData = readyableInstance->Component};
-        result = readyable->Ready(reference);
+        result = readyable->Ready(object, readyableInstance->Component);
 
         if(result) return result;
     }
@@ -47,8 +46,7 @@ int TestObjectExit(ObjectData *objectData, void *object)
         ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
         Readyable *readyable = readyableInstance->VTable;
 
-        ComponentReference reference = {.Object = object, .ComponentData = readyableInstance->Component};
-        result = readyable->Exit(reference);
+        result = readyable->Exit(object, readyableInstance->Component);
 
         if(result) return result;
     }

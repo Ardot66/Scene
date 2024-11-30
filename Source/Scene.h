@@ -26,13 +26,13 @@ struct InterfaceReference
 };
 
 INTERFACE_DECLARE(Saveable, 
-    int (*Save)(ComponentReference self, SaveData *saveStack);
-    int (*Load)(ComponentReference self, SaveData *saveStack);
+    int (*Save)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
+    int (*Load)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
 )
 
 INTERFACE_DECLARE(Readyable,
-    int (*Ready)(ComponentReference self);
-    int (*Exit)(ComponentReference self);
+    int (*Ready)(void *object, ObjectComponentData *componentData);
+    int (*Exit)(void *object, ObjectComponentData *componentData);
 )
 
 INTERFACE_DECLARE(INode, 
@@ -40,10 +40,10 @@ INTERFACE_DECLARE(INode,
     ComponentReference *MutexGroup;
     size_t *ChildCount;
 
-    ComponentReference *(*GetChild)(ComponentReference self, const size_t index);
-    void (*RemoveChild)(ComponentReference self, const size_t index);
-    int (*AddChild)(ComponentReference self, const ComponentReference *child, size_t *indexDest);
-    int (*InsertChild)(ComponentReference self, const size_t index, const ComponentReference *child);
+    ComponentReference *(*GetChild)(void *object, ObjectComponentData *componentData, const size_t index);
+    void (*RemoveChild)(void *object, ObjectComponentData *componentData, const size_t index);
+    int (*AddChild)(void *object, ObjectComponentData *componentData, const ComponentReference *child, size_t *indexDest);
+    int (*InsertChild)(void *object, ObjectComponentData *componentData, const size_t index, const ComponentReference *child);
 )
 
 COMPONENT_DECLARE(Node, 
@@ -62,8 +62,8 @@ COMPONENT_DECLARE(Node,
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
 INTERFACE_DECLARE(IMutexGroup,
-    void (*Lock)(ComponentReference self, const enum MutexGroupMode mode);
-    void (*Unlock)(ComponentReference self);
+    void (*Lock)(void *object, ObjectComponentData *componentData, const enum MutexGroupMode mode);
+    void (*Unlock)(void *object, ObjectComponentData *componentData);
 )
 
 COMPONENT_DECLARE(NodeMutexGroup,

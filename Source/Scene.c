@@ -36,15 +36,15 @@ INTERFACE_DEFINE(Saveable)
 INTERFACE_DEFINE(Readyable)
 INTERFACE_DEFINE(INode)
 
-int Node_Ready(ComponentReference self)
+int Node_Ready(void *object, ObjectComponentData *componentData)
 {
-    Node *node = POINTER_OFFSET(self.Object, self.ComponentData->Offset);
+    Node *node = POINTER_OFFSET(object, componentData->Offset);
 
     node->ChildCount = 0;
     node->ChildListLength = 0;
     node->Children = NULL;
 
-    ObjectInterfaceData *mutexGroupInterface = ObjectGetInterface(self.ComponentData->ObjectData, TYPEOF(IMutexGroup));
+    ObjectInterfaceData *mutexGroupInterface = ObjectGetInterface(componentData->ObjectData, TYPEOF(IMutexGroup));
     
     if(mutexGroupInterface == NULL)
     {
@@ -52,14 +52,14 @@ int Node_Ready(ComponentReference self)
         node->MutexGroup = parent->MutexGroup;
     }
     else
-        node->MutexGroup = (ComponentReference){.Object = self.Object, .ComponentData = mutexGroupInterface->ImplementingComponents->Component};
+        node->MutexGroup = (ComponentReference){.Object = object, .ComponentData = mutexGroupInterface->ImplementingComponents->Component};
 
     return 0;
 }
 
-int Node_Exit(ComponentReference self)
+int Node_Exit(void *object, ObjectComponentData *componentData)
 {
-    Node *node = POINTER_OFFSET(self.Object, self.ComponentData->Offset);
+    Node *node = POINTER_OFFSET(object, componentData->Offset);
 
     free(node->Children);
 
@@ -82,12 +82,12 @@ COMPONENT_DEFINE(Node,
 
 INTERFACE_DEFINE(IMutexGroup)
 
-int NodeMutexGroup_Ready(ComponentReference self)
+int NodeMutexGroup_Ready(void *object, ObjectComponentData *componentData)
 {
 
 }
 
-int NodeMutexGroup_Exit(ComponentReference self)
+int NodeMutexGroup_Exit(void *object, ObjectComponentData *componentData)
 {
     
 }
