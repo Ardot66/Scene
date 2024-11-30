@@ -31,6 +31,7 @@ INTERFACE_DECLARE(Saveable,
 )
 
 INTERFACE_DECLARE(Readyable,
+    int (*EnterTree)(void *object, ObjectComponentData *componentData);
     int (*Ready)(void *object, ObjectComponentData *componentData);
     int (*Exit)(void *object, ObjectComponentData *componentData);
 )
