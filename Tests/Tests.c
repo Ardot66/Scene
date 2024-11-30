@@ -59,9 +59,9 @@ void TestFreeQueue()
     void *testAlloc = malloc(16);
 
     TEST(testAlloc, !=, NULL, p)
-    TEST(FreeQueuePush(testAlloc), ==, 0, d)
+    TEST(FreeQueuePushPointer(testAlloc), ==, 0, d)
     
-    FreeQueueFlush();
+    TEST(FreeQueueFlush(), ==, 0, d)
 }
 
 void TestNode()

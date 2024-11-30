@@ -2,34 +2,80 @@
 #include "Collections.h"
 #include <stdlib.h>
 
+#include <stdio.h>
+
 pthread_mutex_t FreeQueueMutex = PTHREAD_MUTEX_INITIALIZER;
 CArray FreeQueue = {.Body = NULL, .Count = 0, .Length = 0, .Offset = 0};
+
+typedef struct FreeQueueObject FreeQueueObject;
+
+// If objectData is null, this is just a pointer, otherwise it's an object pointer.
+struct FreeQueueObject
+{
+    void *object;
+    ObjectData *objectData;
+};
 
 int FreeQueueInit()
 {
     return pthread_mutex_init(&FreeQueueMutex, NULL);
 }
 
-int FreeQueuePush(void *ptr)
+int FreeQueuePushPointer(void *ptr)
 {
+    return FreeQueuePushObject(ptr, NULL);
+}
+
+int FreeQueuePushObject(void *object, ObjectData *objectData)
+{
+
+    FreeQueueObject freeQueueObject;
+    freeQueueObject.object = object;
+    freeQueueObject.objectData = objectData;
+
     pthread_mutex_lock(&FreeQueueMutex);
-    int result = CArrayInsert(&FreeQueue, sizeof(ptr), FreeQueue.Count, &ptr);
+    int result = CArrayInsert(&FreeQueue, sizeof(freeQueueObject), FreeQueue.Count, &freeQueueObject);
     pthread_mutex_unlock(&FreeQueueMutex);
 
     return result;
 }
 
-void FreeQueueFlush()
+int FreeQueueFlush()
 {
-    pthread_mutex_lock(&FreeQueueMutex);
-    for(size_t x = 0; x < FreeQueue.Count; x++)
-    {
-        void *ptr = *(void **)CArrayGet(&FreeQueue, sizeof(ptr), 0);
-        CArrayRemove(&FreeQueue, sizeof(ptr), 0);
+    int result = 0;
 
-        free(ptr);
+    const size_t freeQueueCount = FreeQueue.Count;
+
+    pthread_mutex_lock(&FreeQueueMutex);
+    for(size_t x = 0; x < freeQueueCount; x++)
+    {
+        FreeQueueObject freeQueueObject = *(FreeQueueObject *)CArrayGet(&FreeQueue, sizeof(freeQueueObject), 0);
+        CArrayRemove(&FreeQueue, sizeof(freeQueueObject), 0);
+
+        if(freeQueueObject.objectData != NULL)
+        {
+            ObjectInterfaceData *objectReadyableInterface = ObjectGetInterface(freeQueueObject.objectData, TYPEOF(IReadyable));
+
+            for(size_t x = 0; x < objectReadyableInterface->ImplementingComponentsCount && result == 0; x++)
+            {
+                ObjectInterfaceInstanceData *readyableInterfaceInstance = objectReadyableInterface->ImplementingComponents + x;
+                IReadyable *readyable = readyableInterfaceInstance->VTable;
+
+                if(readyable->Exit == NULL)
+                    continue;
+
+                result = readyable->Exit(freeQueueObject.object, readyableInterfaceInstance->Component);
+            }
+        }
+
+        free(freeQueueObject.object);
+
+        if(result)
+            return result;
     }
     pthread_mutex_unlock(&FreeQueueMutex);
+
+    return result;
 }
 
 INTERFACE_DEFINE(ISaveable)

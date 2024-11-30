@@ -81,7 +81,8 @@ COMPONENT_DECLARE(MutexGroup,
 )
 
 int FreeQueueInit();
-int FreeQueuePush(void *ptr);
-void FreeQueueFlush();
+int FreeQueuePushPointer(void *ptr);
+int FreeQueuePushObject(void *object, ObjectData *objectData);
+int FreeQueueFlush();
 
 #endif
