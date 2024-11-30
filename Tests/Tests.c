@@ -12,6 +12,15 @@ int TestObjectCreate(ObjectData **objectDataDest, void **objectDest, const size_
     void *object = malloc(objectData->Size);
     if(object == NULL) return errno;
 
+    *objectDataDest = objectData;
+    *objectDest = object;
+
+    return 0;
+}
+
+int TestObjectReady(ObjectData *objectData, void *object)
+{
+    int result;
     ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(Readyable));
 
     for(size_t x = 0; x < readyableInterface->ImplementingComponentsCount; x++)
@@ -24,9 +33,6 @@ int TestObjectCreate(ObjectData **objectDataDest, void **objectDest, const size_
 
         if(result) return result;
     }
-
-    *objectDataDest = objectData;
-    *objectDest = object;
 
     return 0;
 }
@@ -70,14 +76,19 @@ void TestNode()
     ObjectData *objectData = NULL;
     void *object = NULL;
     int result = TestObjectCreate(&objectData, &object, componentCount, objectComponents);
-
     TEST(result, ==, 0, d, goto Exit;)
 
     ObjectInterfaceInstanceData *iNodeInstance = ObjectGetInterface(objectData, TYPEOF(INode))->ImplementingComponents;
     INode *iNode = iNodeInstance->VTable;
     void *node = POINTER_OFFSET(object, iNodeInstance->Component->Offset);
-    size_t *nodeChildCount = POINTER_OFFSET(node, iNode->ChildCount);
 
+    ComponentReference *nodeParent = POINTER_OFFSET(node, iNode->Parent);
+    *nodeParent = (ComponentReference){.Object = object, .ComponentData = iNodeInstance->Component};
+
+    result = TestObjectReady(objectData, object);
+    TEST(result, ==, 0, d, goto Exit;)
+
+    size_t *nodeChildCount = POINTER_OFFSET(node, iNode->ChildCount);
     TEST(*nodeChildCount, ==, 0, llu)
 
     result = TestObjectExit(objectData, object);

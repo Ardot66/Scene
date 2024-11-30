@@ -44,6 +44,16 @@ int Node_Ready(ComponentReference self)
     node->ChildListLength = 0;
     node->Children = NULL;
 
+    ObjectInterfaceData *mutexGroupInterface = ObjectGetInterface(self.ComponentData->ObjectData, TYPEOF(IMutexGroup));
+    
+    if(mutexGroupInterface == NULL)
+    {
+        Node *parent = POINTER_OFFSET(node->Parent.Object, node->Parent.ComponentData->Offset);
+        node->MutexGroup = parent->MutexGroup;
+    }
+    else
+        node->MutexGroup = (ComponentReference){.Object = self.Object, .ComponentData = mutexGroupInterface->ImplementingComponents->Component};
+
     return 0;
 }
 
