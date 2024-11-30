@@ -42,15 +42,14 @@ COMPONENT_DECLARE(Node,
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
-INTERFACE_DECLARE(MutexGroup,
+INTERFACE_DECLARE(IMutexGroup,
     void (*Lock)(ComponentReference self, const enum MutexGroupMode mode);
     void (*Unlock)(ComponentReference self);
 )
 
 COMPONENT_DECLARE(NodeMutexGroup,
     COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, Readyable)
-    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, MutexGroup),
-    ,
+    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, IMutexGroup),
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;
     enum MutexGroupMode Mode;
