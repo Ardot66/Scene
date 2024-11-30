@@ -40,11 +40,11 @@ INTERFACE_DECLARE(INode,
 )
 
 COMPONENT_DECLARE(Node, 
-    ,
+    COMPONENT_IMPLEMENTS_DECLARE(Node, INode),
     COMPONENT_USES_DECLARE(Node, Readyable)
     COMPONENT_USES_DECLARE(Node, Saveable),
     ComponentReference Parent;
-    ComponentReference NodeMutexGroup;
+    ComponentReference MutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;

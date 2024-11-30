@@ -37,7 +37,11 @@ INTERFACE_DEFINE(Readyable)
 INTERFACE_DEFINE(INode)
 
 COMPONENT_DEFINE(Node,
-    ,
+    COMPONENT_IMPLEMENTS_DEFINE(INode, 
+        .Parent = (void *)offsetof(Node, Parent), 
+        .MutexGroup = (void *)offsetof(Node, MutexGroup), 
+        .ChildCount = (void *)offsetof(Node, ChildCount)
+    ),
     COMPONENT_USES_DEFINE(Readyable)
     COMPONENT_USES_DEFINE(Saveable)
 )
