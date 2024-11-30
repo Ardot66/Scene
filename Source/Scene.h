@@ -16,7 +16,7 @@ struct SaveData
 struct ComponentReference
 {
     void *Object;
-    ObjectComponentData *ComponentData;
+    ObjectComponentData *Component;
 };
 
 struct InterfaceReference
@@ -36,14 +36,14 @@ INTERFACE_DECLARE(Readyable,
 )
 
 INTERFACE_DECLARE(INode, 
-    ComponentReference *Parent;
-    ComponentReference *MutexGroup;
+    InterfaceReference *Parent;
+    InterfaceReference *MutexGroup;
     size_t *ChildCount;
 
-    ComponentReference *(*GetChild)(void *object, ObjectComponentData *componentData, const size_t index);
+    InterfaceReference *(*GetChild)(void *object, ObjectComponentData *componentData, const size_t index);
     void (*RemoveChild)(void *object, ObjectComponentData *componentData, const size_t index);
-    int (*AddChild)(void *object, ObjectComponentData *componentData, const ComponentReference *child, size_t *indexDest);
-    int (*InsertChild)(void *object, ObjectComponentData *componentData, const size_t index, const ComponentReference *child);
+    int (*AddChild)(void *object, ObjectComponentData *componentData, const InterfaceReference *child, size_t *indexDest);
+    int (*InsertChild)(void *object, ObjectComponentData *componentData, const size_t index, const InterfaceReference *child);
 )
 
 COMPONENT_DECLARE(Node, 
@@ -51,12 +51,12 @@ COMPONENT_DECLARE(Node,
     COMPONENT_IMPLEMENTS_DECLARE(Node, Readyable),
     COMPONENT_USES_DECLARE(Node, Readyable)
     COMPONENT_USES_DECLARE(Node, Saveable),
-    ComponentReference Parent;
-    ComponentReference MutexGroup;
+    InterfaceReference Parent;
+    InterfaceReference MutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;
-    ComponentReference *Children;
+    InterfaceReference *Children;
 )
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};

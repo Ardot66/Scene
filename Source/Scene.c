@@ -48,11 +48,13 @@ int Node_Ready(void *object, ObjectComponentData *componentData)
     
     if(mutexGroupInterface == NULL)
     {
-        Node *parent = POINTER_OFFSET(node->Parent.Object, node->Parent.ComponentData->Offset);
-        node->MutexGroup = parent->MutexGroup;
+        void *parent = POINTER_OFFSET(node->Parent.Object, node->Parent.Interface->Component->Offset);
+        INode *parentInterface = node->Parent.Interface->VTable;
+
+        node->MutexGroup = *(InterfaceReference *)POINTER_OFFSET(parent, parentInterface->MutexGroup);
     }
     else
-        node->MutexGroup = (ComponentReference){.Object = object, .ComponentData = mutexGroupInterface->ImplementingComponents->Component};
+        node->MutexGroup = (InterfaceReference){.Object = object, .Interface = mutexGroupInterface->ImplementingComponents};
 
     return 0;
 }

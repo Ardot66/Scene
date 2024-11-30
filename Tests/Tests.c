@@ -80,8 +80,8 @@ void TestNode()
     INode *iNode = iNodeInstance->VTable;
     void *node = POINTER_OFFSET(object, iNodeInstance->Component->Offset);
 
-    ComponentReference *nodeParent = POINTER_OFFSET(node, iNode->Parent);
-    *nodeParent = (ComponentReference){.Object = object, .ComponentData = iNodeInstance->Component};
+    InterfaceReference *nodeParent = POINTER_OFFSET(node, iNode->Parent);
+    *nodeParent = (InterfaceReference){.Object = object, .Interface = iNodeInstance};
 
     result = TestObjectReady(objectData, object);
     TEST(result, ==, 0, d, goto Exit;)
