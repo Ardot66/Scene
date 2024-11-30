@@ -18,17 +18,15 @@ int TestObjectCreate(ObjectData **objectDataDest, void **objectDest, const size_
     return 0;
 }
 
-int TestObjectReady(ObjectData *objectData, void *object)
+int ObjectCallInterfaceFunction(ObjectData *objectData, void *object, const InterfaceData *interface, int (*Caller)(void *object, const ObjectInterfaceInstanceData *interfaceInstance))
 {
     int result;
-    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(IReadyable));
+    ObjectInterfaceData *objectInterface = ObjectGetInterface(objectData, interface);
 
-    for(size_t x = 0; x < readyableInterface->ImplementingComponentsCount; x++)
+    for(size_t x = 0; x < objectInterface->ImplementingComponentsCount; x++)
     {
-        ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
-        IReadyable *readyable = readyableInstance->VTable;
-
-        result = readyable->Ready(object, readyableInstance->Component);
+        ObjectInterfaceInstanceData *interfaceInstance = objectInterface->ImplementingComponents + x;
+        result = Caller(object, interfaceInstance);
 
         if(result) return result;
     }
@@ -36,22 +34,22 @@ int TestObjectReady(ObjectData *objectData, void *object)
     return 0;
 }
 
-int TestObjectExit(ObjectData *objectData, void *object)
+int ObjectInitializeCaller(void *object, const ObjectInterfaceInstanceData *interfaceInstance)
 {
-    int result;
-    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(IReadyable));
+    IReadyable *readyable = interfaceInstance->VTable;
+    if(readyable->Initialize == NULL)
+        return 0;
 
-    for(size_t x = 0; x < readyableInterface->ImplementingComponentsCount; x++)
-    {
-        ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
-        IReadyable *readyable = readyableInstance->VTable;
+    return readyable->Initialize(object, interfaceInstance->Component);
+}
 
-        result = readyable->Exit(object, readyableInstance->Component);
+int ObjectExitCaller(void *object, const ObjectInterfaceInstanceData *interfaceInstance)
+{
+    IReadyable *readyable = interfaceInstance->VTable;
+    if(readyable->Exit == NULL)
+        return 0;
 
-        if(result) return result;
-    }
-
-    return 0;
+    return readyable->Exit(object, interfaceInstance->Component);
 }
 
 void TestFreeQueue()
@@ -83,17 +81,16 @@ void TestNode()
     InterfaceReference *nodeParent = POINTER_OFFSET(node, iNode->Parent);
     *nodeParent = (InterfaceReference){.Object = object, .Interface = iNodeInstance};
 
-    result = TestObjectReady(objectData, object);
+    result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectInitializeCaller);
     TEST(result, ==, 0, d, goto Exit;)
 
     size_t *nodeChildCount = POINTER_OFFSET(node, iNode->ChildCount);
     TEST(*nodeChildCount, ==, 0, llu)
 
-    result = TestObjectExit(objectData, object);
+    result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectExitCaller);
     TEST(result, ==, 0, d, goto Exit;)
 
     Exit:
-
     free(objectData);
     free(object);
 }

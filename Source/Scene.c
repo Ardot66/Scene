@@ -36,7 +36,7 @@ INTERFACE_DEFINE(ISaveable)
 INTERFACE_DEFINE(IReadyable)
 INTERFACE_DEFINE(INode)
 
-int Node_Ready(void *object, ObjectComponentData *componentData)
+int Node_Initialize(void *object, ObjectComponentData *componentData)
 {
     Node *node = POINTER_OFFSET(object, componentData->Offset);
 
@@ -75,7 +75,7 @@ COMPONENT_DEFINE(Node,
         .ChildCount = (void *)offsetof(Node, ChildCount),
     )
     COMPONENT_IMPLEMENTS_DEFINE(IReadyable,
-        .Ready = Node_Ready,
+        .Initialize = Node_Initialize,
         .Exit = Node_Exit
     ),
     COMPONENT_USES_DEFINE(IReadyable)

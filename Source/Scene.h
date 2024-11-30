@@ -31,7 +31,10 @@ INTERFACE_DECLARE(ISaveable,
 )
 
 INTERFACE_DECLARE(IReadyable,
-    int (*EnterTree)(void *object, ObjectComponentData *componentData);
+    // Initialize will start at the top of the tree and iterate down.
+    int (*Initialize)(void *object, ObjectComponentData *componentData);
+
+    // Ready will start at the bottom of the tree and iterate up, this occurs after all Initialize calls
     int (*Ready)(void *object, ObjectComponentData *componentData);
     int (*Exit)(void *object, ObjectComponentData *componentData);
 )
