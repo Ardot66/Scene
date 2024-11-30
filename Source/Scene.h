@@ -28,6 +28,17 @@ INTERFACE_DECLARE(Readyable,
     int (*Exit)(ComponentReference self);
 )
 
+INTERFACE_DECLARE(INode, 
+    ComponentReference *Parent;
+    ComponentReference *MutexGroup;
+    size_t *ChildCount;
+
+    ComponentReference *(*GetChild)(ComponentReference self, const size_t index);
+    void (*RemoveChild)(ComponentReference self, const size_t index);
+    int (*AddChild)(ComponentReference self, const ComponentReference *child, size_t *indexDest);
+    int (*InsertChild)(ComponentReference self, const size_t index, const ComponentReference *child);
+)
+
 COMPONENT_DECLARE(Node, 
     ,
     COMPONENT_USES_DECLARE(Node, Readyable)
@@ -50,6 +61,7 @@ INTERFACE_DECLARE(IMutexGroup,
 COMPONENT_DECLARE(NodeMutexGroup,
     COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, Readyable)
     COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, IMutexGroup),
+    ,
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;
     enum MutexGroupMode Mode;

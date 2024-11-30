@@ -34,6 +34,7 @@ void FreeQueueFlush()
 
 INTERFACE_DEFINE(Saveable)
 INTERFACE_DEFINE(Readyable)
+INTERFACE_DEFINE(INode)
 
 COMPONENT_DEFINE(Node,
     ,
