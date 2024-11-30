@@ -32,8 +32,8 @@ void FreeQueueFlush()
     pthread_mutex_unlock(&FreeQueueMutex);
 }
 
-INTERFACE_DEFINE(Saveable)
-INTERFACE_DEFINE(Readyable)
+INTERFACE_DEFINE(ISaveable)
+INTERFACE_DEFINE(IReadyable)
 INTERFACE_DEFINE(INode)
 
 int Node_Ready(void *object, ObjectComponentData *componentData)
@@ -74,27 +74,27 @@ COMPONENT_DEFINE(Node,
         .MutexGroup = (void *)offsetof(Node, MutexGroup), 
         .ChildCount = (void *)offsetof(Node, ChildCount),
     )
-    COMPONENT_IMPLEMENTS_DEFINE(Readyable,
+    COMPONENT_IMPLEMENTS_DEFINE(IReadyable,
         .Ready = Node_Ready,
         .Exit = Node_Exit
     ),
-    COMPONENT_USES_DEFINE(Readyable)
-    COMPONENT_USES_DEFINE(Saveable)
+    COMPONENT_USES_DEFINE(IReadyable)
+    COMPONENT_USES_DEFINE(ISaveable)
 )
 
 INTERFACE_DEFINE(IMutexGroup)
 
-int NodeMutexGroup_Ready(void *object, ObjectComponentData *componentData)
+int MutexGroup_Ready(void *object, ObjectComponentData *componentData)
 {
 
 }
 
-int NodeMutexGroup_Exit(void *object, ObjectComponentData *componentData)
+int MutexGroup_Exit(void *object, ObjectComponentData *componentData)
 {
     
 }
 
-COMPONENT_DEFINE(NodeMutexGroup,
-    COMPONENT_IMPLEMENTS_DEFINE(Readyable, .Ready = NodeMutexGroup_Ready, .Exit = NodeMutexGroup_Exit)
+COMPONENT_DEFINE(MutexGroup,
+    COMPONENT_IMPLEMENTS_DEFINE(IReadyable, .Ready = MutexGroup_Ready, .Exit = MutexGroup_Exit)
     COMPONENT_IMPLEMENTS_DEFINE(IMutexGroup),
 )

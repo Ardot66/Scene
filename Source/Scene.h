@@ -25,12 +25,12 @@ struct InterfaceReference
     ObjectInterfaceInstanceData *Interface;
 };
 
-INTERFACE_DECLARE(Saveable, 
+INTERFACE_DECLARE(ISaveable, 
     int (*Save)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
     int (*Load)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
 )
 
-INTERFACE_DECLARE(Readyable,
+INTERFACE_DECLARE(IReadyable,
     int (*EnterTree)(void *object, ObjectComponentData *componentData);
     int (*Ready)(void *object, ObjectComponentData *componentData);
     int (*Exit)(void *object, ObjectComponentData *componentData);
@@ -49,9 +49,9 @@ INTERFACE_DECLARE(INode,
 
 COMPONENT_DECLARE(Node, 
     COMPONENT_IMPLEMENTS_DECLARE(Node, INode)
-    COMPONENT_IMPLEMENTS_DECLARE(Node, Readyable),
-    COMPONENT_USES_DECLARE(Node, Readyable)
-    COMPONENT_USES_DECLARE(Node, Saveable),
+    COMPONENT_IMPLEMENTS_DECLARE(Node, IReadyable),
+    COMPONENT_USES_DECLARE(Node, IReadyable)
+    COMPONENT_USES_DECLARE(Node, ISaveable),
     InterfaceReference Parent;
     InterfaceReference MutexGroup;
     
@@ -67,9 +67,9 @@ INTERFACE_DECLARE(IMutexGroup,
     void (*Unlock)(void *object, ObjectComponentData *componentData);
 )
 
-COMPONENT_DECLARE(NodeMutexGroup,
-    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, Readyable)
-    COMPONENT_IMPLEMENTS_DECLARE(NodeMutexGroup, IMutexGroup),
+COMPONENT_DECLARE(MutexGroup,
+    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, IReadyable)
+    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, IMutexGroup),
     ,
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;

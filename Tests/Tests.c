@@ -21,12 +21,12 @@ int TestObjectCreate(ObjectData **objectDataDest, void **objectDest, const size_
 int TestObjectReady(ObjectData *objectData, void *object)
 {
     int result;
-    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(Readyable));
+    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(IReadyable));
 
     for(size_t x = 0; x < readyableInterface->ImplementingComponentsCount; x++)
     {
         ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
-        Readyable *readyable = readyableInstance->VTable;
+        IReadyable *readyable = readyableInstance->VTable;
 
         result = readyable->Ready(object, readyableInstance->Component);
 
@@ -39,12 +39,12 @@ int TestObjectReady(ObjectData *objectData, void *object)
 int TestObjectExit(ObjectData *objectData, void *object)
 {
     int result;
-    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(Readyable));
+    ObjectInterfaceData *readyableInterface = ObjectGetInterface(objectData, TYPEOF(IReadyable));
 
     for(size_t x = 0; x < readyableInterface->ImplementingComponentsCount; x++)
     {
         ObjectInterfaceInstanceData *readyableInstance = readyableInterface->ImplementingComponents + x;
-        Readyable *readyable = readyableInstance->VTable;
+        IReadyable *readyable = readyableInstance->VTable;
 
         result = readyable->Exit(object, readyableInstance->Component);
 
