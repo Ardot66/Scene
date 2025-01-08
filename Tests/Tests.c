@@ -74,18 +74,14 @@ void TestNode()
     int result = TestObjectCreate(&objectData, &object, componentCount, objectComponents);
     TEST(result, ==, 0, d, goto Exit;)
 
-    ObjectInterfaceInstanceData *iNodeInstance = ObjectGetInterface(objectData, TYPEOF(INode))->ImplementingComponents;
-    INode *iNode = iNodeInstance->VTable;
-    void *node = POINTER_OFFSET(object, iNodeInstance->Component->Offset);
+    ObjectComponentData *nodeData = ObjectGetComponent(objectData, TYPEOF(Node));
+    Node *node = POINTER_OFFSET(object, nodeData->Offset);
 
-    InterfaceReference *nodeParent = POINTER_OFFSET(node, iNode->Parent);
-    *nodeParent = (InterfaceReference){.Object = object, .Interface = iNodeInstance};
+    node->Parent = (ComponentReference){object, nodeData};
 
     result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectInitializeCaller);
     TEST(result, ==, 0, d, goto Exit;)
-
-    size_t *nodeChildCount = POINTER_OFFSET(node, iNode->ChildCount);
-    TEST(*nodeChildCount, ==, 0, llu)
+    TEST(node->ChildCount, ==, 0, llu)
 
     result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectExitCaller);
     TEST(result, ==, 0, d, goto Exit;)

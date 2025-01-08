@@ -16,13 +16,13 @@ struct SaveData
 struct ComponentReference
 {
     void *Object;
-    ObjectComponentData *Component;
+    const ObjectComponentData *Component;
 };
 
 struct InterfaceReference
 {
     void *Object;
-    ObjectInterfaceInstanceData *Interface;
+    const ObjectInterfaceInstanceData *Interface;
 };
 
 INTERFACE_DECLARE(ISaveable, ,
@@ -39,40 +39,23 @@ INTERFACE_DECLARE(IReadyable, ,
     int (*Exit)(void *object, ObjectComponentData *componentData);
 )
 
-INTERFACE_DECLARE(INode, ,
-    InterfaceReference *Parent;
-    InterfaceReference *MutexGroup;
-    size_t *ChildCount;
-
-    InterfaceReference *(*GetChild)(void *object, ObjectComponentData *componentData, const size_t index);
-    void (*RemoveChild)(void *object, ObjectComponentData *componentData, const size_t index);
-    int (*AddChild)(void *object, ObjectComponentData *componentData, const InterfaceReference *child, size_t *indexDest);
-    int (*InsertChild)(void *object, ObjectComponentData *componentData, const size_t index, const InterfaceReference *child);
-)
-
 COMPONENT_DECLARE(Node,
-    COMPONENT_IMPLEMENTS_DECLARE(Node, INode)
     COMPONENT_IMPLEMENTS_DECLARE(Node, IReadyable),
     USES_DECLARE(Node, IReadyable)
-    USES_DECLARE(Node, ISaveable),
-    InterfaceReference Parent;
-    InterfaceReference MutexGroup;
+    USES_DECLARE(Node, ISaveable)
+    USES_DECLARE(Node, MutexGroup),
+    ComponentReference Parent;
+    ComponentReference MutexGroup;
     
     size_t ChildCount;
     size_t ChildListLength;
-    InterfaceReference *Children;
+    ComponentReference *Children;
 )
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
-INTERFACE_DECLARE(IMutexGroup, ,
-    void (*Lock)(void *object, ObjectComponentData *componentData, const enum MutexGroupMode mode);
-    void (*Unlock)(void *object, ObjectComponentData *componentData);
-)
-
 COMPONENT_DECLARE(MutexGroup,
-    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, IReadyable)
-    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, IMutexGroup),
+    COMPONENT_IMPLEMENTS_DECLARE(MutexGroup, IReadyable),
     ,
     pthread_mutex_t Mutex;
     pthread_cond_t Condition;

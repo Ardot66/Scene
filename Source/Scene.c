@@ -80,7 +80,6 @@ int FreeQueueFlush()
 
 INTERFACE_DEFINE(ISaveable, )
 INTERFACE_DEFINE(IReadyable, )
-INTERFACE_DEFINE(INode, )
 
 int Node_Initialize(void *object, ObjectComponentData *componentData)
 {
@@ -90,17 +89,15 @@ int Node_Initialize(void *object, ObjectComponentData *componentData)
     node->ChildListLength = 0;
     node->Children = NULL;
 
-    ObjectInterfaceData *mutexGroupInterface = ObjectGetInterface(componentData->ObjectData, TYPEOF(IMutexGroup));
+    const ObjectComponentData *mutexGroup = COMPONENT_GET_USE(componentData, Node, MutexGroup)->Component;
     
-    if(mutexGroupInterface == NULL)
+    if(mutexGroup == NULL)
     {
-        void *parent = POINTER_OFFSET(node->Parent.Object, node->Parent.Interface->Component->Offset);
-        INode *parentInterface = node->Parent.Interface->VTable;
-
-        node->MutexGroup = *(InterfaceReference *)POINTER_OFFSET(parent, parentInterface->MutexGroup);
+        Node *parent = POINTER_OFFSET(node->Parent.Object, node->Parent.Component->Offset);
+        node->MutexGroup = parent->MutexGroup;
     }
     else
-        node->MutexGroup = (InterfaceReference){.Object = object, .Interface = mutexGroupInterface->ImplementingComponents};
+        node->MutexGroup = (ComponentReference){.Object = object, .Component = mutexGroup};
 
     return 0;
 }
@@ -115,20 +112,14 @@ int Node_Exit(void *object, ObjectComponentData *componentData)
 }
 
 COMPONENT_DEFINE(Node,
-    COMPONENT_IMPLEMENTS_DEFINE(INode, 
-        .Parent = (void *)offsetof(Node, Parent), 
-        .MutexGroup = (void *)offsetof(Node, MutexGroup), 
-        .ChildCount = (void *)offsetof(Node, ChildCount),
-    )
     COMPONENT_IMPLEMENTS_DEFINE(IReadyable,
         .Initialize = Node_Initialize,
         .Exit = Node_Exit
     ),
     USES_DEFINE(IReadyable)
     USES_DEFINE(ISaveable)
+    USES_DEFINE(MutexGroup)
 )
-
-INTERFACE_DEFINE(IMutexGroup, )
 
 int MutexGroup_Ready(void *object, ObjectComponentData *componentData)
 {
@@ -141,6 +132,5 @@ int MutexGroup_Exit(void *object, ObjectComponentData *componentData)
 }
 
 COMPONENT_DEFINE(MutexGroup,
-    COMPONENT_IMPLEMENTS_DEFINE(IReadyable, .Ready = MutexGroup_Ready, .Exit = MutexGroup_Exit)
-    COMPONENT_IMPLEMENTS_DEFINE(IMutexGroup),
+    COMPONENT_IMPLEMENTS_DEFINE(IReadyable, .Ready = MutexGroup_Ready, .Exit = MutexGroup_Exit),
 )
