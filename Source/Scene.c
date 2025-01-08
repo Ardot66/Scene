@@ -78,9 +78,9 @@ int FreeQueueFlush()
     return result;
 }
 
-INTERFACE_DEFINE(ISaveable)
-INTERFACE_DEFINE(IReadyable)
-INTERFACE_DEFINE(INode)
+INTERFACE_DEFINE(ISaveable, )
+INTERFACE_DEFINE(IReadyable, )
+INTERFACE_DEFINE(INode, )
 
 int Node_Initialize(void *object, ObjectComponentData *componentData)
 {
@@ -124,11 +124,11 @@ COMPONENT_DEFINE(Node,
         .Initialize = Node_Initialize,
         .Exit = Node_Exit
     ),
-    COMPONENT_USES_DEFINE(IReadyable)
-    COMPONENT_USES_DEFINE(ISaveable)
+    USES_DEFINE(IReadyable)
+    USES_DEFINE(ISaveable)
 )
 
-INTERFACE_DEFINE(IMutexGroup)
+INTERFACE_DEFINE(IMutexGroup, )
 
 int MutexGroup_Ready(void *object, ObjectComponentData *componentData)
 {

@@ -25,12 +25,12 @@ struct InterfaceReference
     ObjectInterfaceInstanceData *Interface;
 };
 
-INTERFACE_DECLARE(ISaveable, 
+INTERFACE_DECLARE(ISaveable, ,
     int (*Save)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
     int (*Load)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
 )
 
-INTERFACE_DECLARE(IReadyable,
+INTERFACE_DECLARE(IReadyable, ,
     // Initialize will start at the top of the tree and iterate down.
     int (*Initialize)(void *object, ObjectComponentData *componentData);
 
@@ -39,7 +39,7 @@ INTERFACE_DECLARE(IReadyable,
     int (*Exit)(void *object, ObjectComponentData *componentData);
 )
 
-INTERFACE_DECLARE(INode, 
+INTERFACE_DECLARE(INode, ,
     InterfaceReference *Parent;
     InterfaceReference *MutexGroup;
     size_t *ChildCount;
@@ -50,11 +50,11 @@ INTERFACE_DECLARE(INode,
     int (*InsertChild)(void *object, ObjectComponentData *componentData, const size_t index, const InterfaceReference *child);
 )
 
-COMPONENT_DECLARE(Node, 
+COMPONENT_DECLARE(Node,
     COMPONENT_IMPLEMENTS_DECLARE(Node, INode)
     COMPONENT_IMPLEMENTS_DECLARE(Node, IReadyable),
-    COMPONENT_USES_DECLARE(Node, IReadyable)
-    COMPONENT_USES_DECLARE(Node, ISaveable),
+    USES_DECLARE(Node, IReadyable)
+    USES_DECLARE(Node, ISaveable),
     InterfaceReference Parent;
     InterfaceReference MutexGroup;
     
@@ -65,7 +65,7 @@ COMPONENT_DECLARE(Node,
 
 enum MutexGroupMode {MUTEX_GROUP_MODE_NONE, MUTEX_GROUP_MODE_READ, MUTEX_GROUP_MODE_WRITE};
 
-INTERFACE_DECLARE(IMutexGroup,
+INTERFACE_DECLARE(IMutexGroup, ,
     void (*Lock)(void *object, ObjectComponentData *componentData, const enum MutexGroupMode mode);
     void (*Unlock)(void *object, ObjectComponentData *componentData);
 )
