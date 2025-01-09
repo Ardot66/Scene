@@ -185,16 +185,60 @@ COMPONENT_DEFINE(Node,
     USES_DEFINE(MutexGroup)
 )
 
-int MutexGroup_Ready(ComponentReference component)
+int MutexGroupInitialize(ComponentReference component)
 {
+    MutexGroup *mutexGroup = CRefComponent(component);
 
+    mutexGroup->ActiveThreadCount = 0;
+    mutexGroup->Mode = MUTEX_GROUP_MODE_NONE;
+    mutexGroup->Mutex = PTHREAD_MUTEX_INITIALIZER;
+    mutexGroup->Condition = PTHREAD_COND_INITIALIZER;
+
+    int result;
+
+    if(result = pthread_mutex_init(&mutexGroup->Mutex, NULL)) return result;
+    if(result = pthread_cond_init(&mutexGroup->Condition, NULL)) return result;
+
+    return 0;
 }
 
-int MutexGroup_Exit(ComponentReference component)
+int MutexGroupExit(ComponentReference component)
 {
-    
+    MutexGroup *mutexGroup = CRefComponent(component);
+
+    pthread_mutex_destroy(&mutexGroup->Mutex);
+    pthread_cond_destroy(&mutexGroup->Mutex);
+    return 0;
+}
+
+void MutexGroupLock(ComponentReference component, const enum MutexGroupMode mode)
+{
+    MutexGroup *mutexGroup = CRefComponent(component);
+    pthread_mutex_lock(&mutexGroup->Mutex);
+
+    while(mutexGroup->Mode == MUTEX_GROUP_MODE_READ && mode != MUTEX_GROUP_MODE_READ || mutexGroup->Mode == MUTEX_GROUP_MODE_WRITE)
+        pthread_cond_wait(&mutexGroup->Condition, &mutexGroup->Mutex);
+
+    mutexGroup->Mode = mode;
+    mutexGroup->ActiveThreadCount += 1;
+    pthread_mutex_unlock(&mutexGroup->Mutex);
+}
+
+void MutexGroupUnlock(ComponentReference component)
+{
+    MutexGroup *mutexGroup = CRefComponent(component);
+    pthread_mutex_lock(&mutexGroup->Mutex);
+
+    mutexGroup->ActiveThreadCount--;
+    if(mutexGroup->ActiveThreadCount == 0)
+    {
+        mutexGroup->Mode = MUTEX_GROUP_MODE_NONE;
+        pthread_cond_signal(&mutexGroup->Condition);
+    }
+
+    pthread_mutex_unlock(&mutexGroup->Mutex);
 }
 
 COMPONENT_DEFINE(MutexGroup,
-    COMPONENT_IMPLEMENTS_DEFINE(IReadyable, .Ready = MutexGroup_Ready, .Exit = MutexGroup_Exit),
+    COMPONENT_IMPLEMENTS_DEFINE(IReadyable, .Initialize = MutexGroupInitialize, .Exit = MutexGroupExit),
 )

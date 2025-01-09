@@ -85,5 +85,7 @@ int FreeQueueFlush();
 int NodeAddChild(ComponentReference component, ComponentReference child, size_t *indexDest);
 void NodeRemoveChild(ComponentReference component, size_t index);
 int NodeInsertChild(ComponentReference component, ComponentReference child, size_t index);
+void MutexGroupLock(ComponentReference component, const enum MutexGroupMode mode);
+void MutexGroupUnlock(ComponentReference component);
 
 #endif

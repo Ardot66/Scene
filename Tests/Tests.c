@@ -1,6 +1,9 @@
 #include "TestingUtilities.h"
+#include "ComponentObjects.h"
 #include "Scene.h"
 #include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
 
 // Both objectData and object returned need to be freed.
 int TestObjectCreate(ObjectData **objectDataDest, void **objectDest, const size_t componentCount, const ComponentData **components)
@@ -108,10 +111,61 @@ void TestNode()
     free(object);
 }
 
+struct MutexGroupTestContext
+{
+    ComponentReference MutexGroupCRef;
+    int *FinishedFlag;
+};
+
+void *MutexGroupTestThread(void *param)
+{
+    struct MutexGroupTestContext testContext = *(struct MutexGroupTestContext*)param;
+    MutexGroupLock(testContext.MutexGroupCRef, MUTEX_GROUP_MODE_WRITE);
+    *testContext.FinishedFlag = 1;
+    MutexGroupUnlock(testContext.MutexGroupCRef);
+    return NULL;
+}
+
+void TestNodeMutexGroup()
+{
+    const ComponentData **testComponentData = COMPONENTS(TYPEOF(MutexGroup));
+
+    void *object;
+    ObjectData *objectData;
+    TEST(TestObjectCreate(&objectData, &object, 1, testComponentData), ==, 0, d, return;)
+    TEST(ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectInitializeCaller), ==, 0, d, return;)
+
+    ObjectComponentData *mutexGroupComponent = ObjectGetComponent(objectData, TYPEOF(MutexGroup));
+    ComponentReference mutexGroupCRef = CRef(object, mutexGroupComponent);
+    MutexGroup *mutexGroup = CRefComponent(mutexGroupCRef);
+
+    MutexGroupLock(mutexGroupCRef, MUTEX_GROUP_MODE_READ);
+
+    int finishedFlag = 0;
+    struct MutexGroupTestContext testContext = {mutexGroupCRef, &finishedFlag};
+    pthread_t thread;
+    pthread_create(&thread, NULL, MutexGroupTestThread, &testContext);
+
+    struct timespec waitTime;
+    waitTime.tv_nsec = 10000000; // wait ten milliseconds
+    waitTime.tv_sec = 0;
+    nanosleep(&waitTime, NULL);
+    TEST(finishedFlag, ==, 0, d);
+
+    MutexGroupUnlock(mutexGroupCRef);
+    
+    nanosleep(&waitTime, NULL);
+    TEST(finishedFlag, ==, 1, d);
+
+    free(objectData);
+    free(object);
+}
+
 int main(int argCount, char **argValues)
 {
     TestFreeQueue();
     TestNode();
+    TestNodeMutexGroup();
 
     TestsEnd();
 }
