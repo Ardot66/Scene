@@ -12,8 +12,8 @@ typedef struct FreeQueueObject FreeQueueObject;
 // If objectData is null, this is just a pointer, otherwise it's an object pointer.
 struct FreeQueueObject
 {
-    void *object;
-    ObjectData *objectData;
+    void *Object;
+    ObjectData *ObjectData;
 };
 
 int FreeQueueInit()
@@ -30,8 +30,8 @@ int FreeQueuePushObject(void *object, ObjectData *objectData)
 {
 
     FreeQueueObject freeQueueObject;
-    freeQueueObject.object = object;
-    freeQueueObject.objectData = objectData;
+    freeQueueObject.Object = object;
+    freeQueueObject.ObjectData = objectData;
 
     pthread_mutex_lock(&FreeQueueMutex);
     int result = CArrayInsert(&FreeQueue, sizeof(freeQueueObject), FreeQueue.Count, &freeQueueObject);
@@ -52,9 +52,9 @@ int FreeQueueFlush()
         FreeQueueObject freeQueueObject = *(FreeQueueObject *)CArrayGet(&FreeQueue, sizeof(freeQueueObject), 0);
         CArrayRemove(&FreeQueue, sizeof(freeQueueObject), 0);
 
-        if(freeQueueObject.objectData != NULL)
+        if(freeQueueObject.ObjectData != NULL)
         {
-            ObjectInterfaceData *objectReadyableInterface = ObjectGetInterface(freeQueueObject.objectData, TYPEOF(IReadyable));
+            ObjectInterfaceData *objectReadyableInterface = ObjectGetInterface(freeQueueObject.ObjectData, TYPEOF(IReadyable));
 
             for(size_t x = 0; x < objectReadyableInterface->ImplementingComponentsCount && result == 0; x++)
             {
@@ -64,11 +64,11 @@ int FreeQueueFlush()
                 if(readyable->Exit == NULL)
                     continue;
 
-                result = readyable->Exit(freeQueueObject.object, readyableInterfaceInstance->Component);
+                result = readyable->Exit(CRef(freeQueueObject.Object, readyableInterfaceInstance->Component));
             }
         }
 
-        free(freeQueueObject.object);
+        free(freeQueueObject.Object);
 
         if(result)
             return result;
@@ -81,15 +81,15 @@ int FreeQueueFlush()
 INTERFACE_DEFINE(ISaveable, )
 INTERFACE_DEFINE(IReadyable, )
 
-int Node_Initialize(void *object, ObjectComponentData *componentData)
+int NodeInitialize(ComponentReference component)
 {
-    Node *node = POINTER_OFFSET(object, componentData->Offset);
+    Node *node = CRefComponent(component);
 
     node->ChildCount = 0;
     node->ChildListLength = 0;
     node->Children = NULL;
 
-    const ObjectComponentData *mutexGroup = COMPONENT_GET_USE(componentData, Node, MutexGroup)->Component;
+    const ObjectComponentData *mutexGroup = COMPONENT_GET_USE(component.Component, Node, MutexGroup)->Component;
     
     if(mutexGroup == NULL)
     {
@@ -97,36 +97,100 @@ int Node_Initialize(void *object, ObjectComponentData *componentData)
         node->MutexGroup = parent->MutexGroup;
     }
     else
-        node->MutexGroup = (ComponentReference){.Object = object, .Component = mutexGroup};
+        node->MutexGroup = CRef(component.Object, mutexGroup);
 
     return 0;
 }
 
-int Node_Exit(void *object, ObjectComponentData *componentData)
+int NodeExit(ComponentReference component)
 {
-    Node *node = POINTER_OFFSET(object, componentData->Offset);
-
+    Node *node = CRefComponent(component);
     free(node->Children);
 
     return 0;
 }
 
+int NodeAddChild(ComponentReference component, ComponentReference child, size_t *indexDest)
+{
+    Node *node = CRefComponent(component);
+    size_t addIndex = node->ChildCount;
+
+    for(size_t x = 0; x < node->ChildCount; x++)
+    {
+        ComponentReference child = node->Children[x];
+        if(child.Object == NULL)
+        {
+            addIndex = x;
+            break;
+        }
+    }
+
+    *indexDest = addIndex;
+    return ArrayInsert(
+        (void **)&node->Children,
+        &node->ChildCount,
+        &node->ChildListLength,
+        sizeof(*node->Children),
+        addIndex,
+        &child
+    );
+}
+
+void NodeRemoveChild(ComponentReference component, size_t index)
+{
+    Node *node = CRefComponent(component);
+    node->Children[index] = CRef(NULL, NULL);
+
+    if(index == node->ChildCount - 1)
+        while(node->Children[node->ChildCount - 1].Object == NULL)
+            node->ChildCount--;
+}
+
+int NodeInsertChild(ComponentReference component, ComponentReference child, size_t index)
+{
+    Node *node = CRefComponent(component);
+
+    if(index < node->ChildCount)
+    {
+        if(node->Children[index].Object != NULL)
+            return EINVAL;
+
+        node->Children[index] = child;
+    }
+    else
+    {
+        const size_t oldChildCount = node->ChildCount;
+
+        ArrayInsert(
+            (void **)&node->Children,
+            &node->ChildCount,
+            &node->ChildListLength,
+            sizeof(*node->Children),
+            index,
+            &child
+        );
+
+        for(int x = oldChildCount; x < index; x++)
+            node->Children[x] = CRef(NULL, NULL);
+    }
+}
+
 COMPONENT_DEFINE(Node,
     COMPONENT_IMPLEMENTS_DEFINE(IReadyable,
-        .Initialize = Node_Initialize,
-        .Exit = Node_Exit
+        .Initialize = NodeInitialize,
+        .Exit = NodeExit
     ),
     USES_DEFINE(IReadyable)
     USES_DEFINE(ISaveable)
     USES_DEFINE(MutexGroup)
 )
 
-int MutexGroup_Ready(void *object, ObjectComponentData *componentData)
+int MutexGroup_Ready(ComponentReference component)
 {
 
 }
 
-int MutexGroup_Exit(void *object, ObjectComponentData *componentData)
+int MutexGroup_Exit(ComponentReference component)
 {
     
 }

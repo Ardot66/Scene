@@ -26,17 +26,17 @@ struct InterfaceReference
 };
 
 INTERFACE_DECLARE(ISaveable, ,
-    int (*Save)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
-    int (*Load)(void *object, ObjectComponentData *componentData, SaveData *saveStack);
+    int (*Save)(ComponentReference component, SaveData *saveStack);
+    int (*Load)(ComponentReference component, SaveData *saveStack);
 )
 
 INTERFACE_DECLARE(IReadyable, ,
     // Initialize will start at the top of the tree and iterate down.
-    int (*Initialize)(void *object, ObjectComponentData *componentData);
+    int (*Initialize)(ComponentReference component);
 
     // Ready will start at the bottom of the tree and iterate up, this occurs after all Initialize calls
-    int (*Ready)(void *object, ObjectComponentData *componentData);
-    int (*Exit)(void *object, ObjectComponentData *componentData);
+    int (*Ready)(ComponentReference component);
+    int (*Exit)(ComponentReference component);
 )
 
 COMPONENT_DECLARE(Node,
@@ -63,9 +63,27 @@ COMPONENT_DECLARE(MutexGroup,
     size_t ActiveThreadCount;
 )
 
+static inline void *CRefComponent(ComponentReference component)
+{
+    return POINTER_OFFSET(component.Object, component.Component->Offset);
+}
+
+static inline ComponentReference CRef(void *object, const ObjectComponentData *componentData)
+{
+    return (ComponentReference){.Object = object, .Component = componentData};
+}
+
+static inline InterfaceReference IRef(void *object, const ObjectInterfaceInstanceData *interface)
+{
+    return (InterfaceReference){.Object = object, .Interface = interface};
+}
+
 int FreeQueueInit();
 int FreeQueuePushPointer(void *ptr);
 int FreeQueuePushObject(void *object, ObjectData *objectData);
 int FreeQueueFlush();
+int NodeAddChild(ComponentReference component, ComponentReference child, size_t *indexDest);
+void NodeRemoveChild(ComponentReference component, size_t index);
+int NodeInsertChild(ComponentReference component, ComponentReference child, size_t index);
 
 #endif

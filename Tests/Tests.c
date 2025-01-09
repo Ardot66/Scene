@@ -40,7 +40,7 @@ int ObjectInitializeCaller(void *object, const ObjectInterfaceInstanceData *inte
     if(readyable->Initialize == NULL)
         return 0;
 
-    return readyable->Initialize(object, interfaceInstance->Component);
+    return readyable->Initialize(CRef(object, interfaceInstance->Component));
 }
 
 int ObjectExitCaller(void *object, const ObjectInterfaceInstanceData *interfaceInstance)
@@ -49,7 +49,7 @@ int ObjectExitCaller(void *object, const ObjectInterfaceInstanceData *interfaceI
     if(readyable->Exit == NULL)
         return 0;
 
-    return readyable->Exit(object, interfaceInstance->Component);
+    return readyable->Exit(CRef(object, interfaceInstance->Component));
 }
 
 void TestFreeQueue()
@@ -82,6 +82,23 @@ void TestNode()
     result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectInitializeCaller);
     TEST(result, ==, 0, d, goto Exit;)
     TEST(node->ChildCount, ==, 0, llu)
+
+    size_t addedIndex;
+    NodeAddChild(CRef(object, nodeData), CRef(object, nodeData), &addedIndex);
+
+    TEST(addedIndex, ==, 0, zu)
+    TEST(node->Children[0].Component, ==, nodeData, p)
+
+    NodeRemoveChild(CRef(object, nodeData), addedIndex);
+
+    TEST(node->ChildCount, ==, 0, zu)
+    TEST(node->Children[0].Object, ==, NULL, p)
+
+    NodeInsertChild(CRef(object, nodeData), CRef(object, nodeData), 2);
+
+    TEST(node->ChildCount, ==, 3, zu)
+    TEST(node->Children[2].Component, ==, nodeData, p)
+    TEST(node->Children[1].Component, ==, NULL, p)
 
     result = ObjectCallInterfaceFunction(objectData, object, TYPEOF(IReadyable), ObjectExitCaller);
     TEST(result, ==, 0, d, goto Exit;)
